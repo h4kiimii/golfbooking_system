@@ -1,11 +1,11 @@
 {
-    "name": "golfbookingsystem",
-    "short_name": "golfbookingsystem",
+    "name": "UPSI Driving Range",
+    "short_name": "UPSI Range",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FFFFFF",
+    "theme_color": "#20A866",
+    "description": "Book driving range sessions and golf trainers at UPSI.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
