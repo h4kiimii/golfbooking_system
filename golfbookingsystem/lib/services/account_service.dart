@@ -126,6 +126,10 @@ class AccountService {
     await _client.auth.resetPasswordForEmail(email);
   }
 
+  Future<void> updatePassword({required String password}) async {
+    await _client.auth.updateUser(UserAttributes(password: password));
+  }
+
   Future<UserProfile> _getOrCreateProfile({
     required String userId,
     required String email,

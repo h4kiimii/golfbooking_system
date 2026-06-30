@@ -88,10 +88,29 @@ void main() {
     await tester.tap(find.text('Update Password'));
     await tester.pumpAndSettle();
 
-    expect(
-      find.text('Password changed for the current app session.'),
-      findsOneWidget,
+    expect(find.text('Password updated successfully.'), findsOneWidget);
+  });
+
+  testWidgets('remember me keeps email only, not password', (tester) async {
+    SharedPreferences.setMockInitialValues({
+      'remembered_login_email': 'saved@example.com',
+      'remembered_login_password': 'old-secret',
+    });
+
+    await pumpAppPastSplash(tester);
+
+    final emailField = tester.widget<TextFormField>(
+      find.byType(TextFormField).at(0),
     );
+    final passwordField = tester.widget<TextFormField>(
+      find.byType(TextFormField).at(1),
+    );
+
+    expect(emailField.controller?.text, 'saved@example.com');
+    expect(passwordField.controller?.text, isEmpty);
+
+    final preferences = await SharedPreferences.getInstance();
+    expect(preferences.getString('remembered_login_password'), isNull);
   });
 
   testWidgets('user can toggle dark mode from profile', (tester) async {

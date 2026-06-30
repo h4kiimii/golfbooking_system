@@ -165,13 +165,24 @@ class ProfilePage extends StatelessWidget {
       builder: (sheetContext) {
         return _ChangePasswordForm(
           currentPassword: currentPassword,
-          onSaved: (newPassword) {
+          onSaved: (newPassword) async {
+            try {
+              await AccountService().updatePassword(password: newPassword);
+            } catch (error) {
+              if (!context.mounted) return;
+              final isLocalTestSession = profile.id == null;
+              if (!isLocalTestSession) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Could not update password: $error')),
+                );
+                return;
+              }
+            }
+            if (!sheetContext.mounted || !context.mounted) return;
             onPasswordChanged(newPassword);
             Navigator.of(sheetContext).pop();
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Password changed for the current app session.'),
-              ),
+              const SnackBar(content: Text('Password updated successfully.')),
             );
           },
         );
@@ -213,7 +224,7 @@ class _ChangePasswordForm extends StatefulWidget {
   });
 
   final String currentPassword;
-  final ValueChanged<String> onSaved;
+  final Future<void> Function(String newPassword) onSaved;
 
   @override
   State<_ChangePasswordForm> createState() => _ChangePasswordFormState();
@@ -236,9 +247,9 @@ class _ChangePasswordFormState extends State<_ChangePasswordForm> {
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
     if (_formKey.currentState!.validate()) {
-      widget.onSaved(_newController.text);
+      await widget.onSaved(_newController.text);
     }
   }
 
@@ -262,7 +273,7 @@ class _ChangePasswordFormState extends State<_ChangePasswordForm> {
             ),
             const SizedBox(height: 6),
             const Text(
-              'This prototype stores the changed password only for the current app session.',
+              'Your account password will be updated in Supabase Auth.',
             ),
             const SizedBox(height: 14),
             _PasswordField(

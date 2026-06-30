@@ -264,12 +264,11 @@ class _LoginFormState extends State<_LoginForm> {
   Future<void> _loadRememberedLogin() async {
     final preferences = await SharedPreferences.getInstance();
     final email = preferences.getString(_rememberEmailKey) ?? '';
-    final password = preferences.getString(_rememberPasswordKey) ?? '';
-    if (!mounted || email.isEmpty || password.isEmpty) return;
+    await preferences.remove(_rememberPasswordKey);
+    if (!mounted || email.isEmpty) return;
 
     setState(() {
       _emailController.text = email;
-      _passwordController.text = password;
       _rememberMe = true;
     });
   }
@@ -281,10 +280,7 @@ class _LoginFormState extends State<_LoginForm> {
         _rememberEmailKey,
         _emailController.text.trim(),
       );
-      await preferences.setString(
-        _rememberPasswordKey,
-        _passwordController.text,
-      );
+      await preferences.remove(_rememberPasswordKey);
       return;
     }
 
