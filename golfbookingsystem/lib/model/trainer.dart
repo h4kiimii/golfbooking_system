@@ -4,6 +4,7 @@ class Trainer {
     required this.phoneNumber,
     required this.email,
     this.imagePath,
+    this.description,
     this.level = defaultLevel,
   });
 
@@ -13,6 +14,7 @@ class Trainer {
   final String phoneNumber;
   final String? email;
   final String? imagePath;
+  final String? description;
   final String level;
 
   Trainer copyWith({
@@ -20,6 +22,7 @@ class Trainer {
     String? phoneNumber,
     String? email,
     String? imagePath,
+    String? description,
     String? level,
   }) {
     return Trainer(
@@ -27,6 +30,7 @@ class Trainer {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       email: email ?? this.email,
       imagePath: imagePath ?? this.imagePath,
+      description: description ?? this.description,
       level: level ?? this.level,
     );
   }

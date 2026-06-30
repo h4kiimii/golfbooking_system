@@ -133,7 +133,22 @@ class AppDataService {
           .order('full_name', ascending: true);
 
       return rows
+          .where((row) {
+            final status = row['status']?.toString().toLowerCase().trim();
+            return status == null ||
+                status.isEmpty ||
+                status == 'active' ||
+                status == 'available';
+          })
           .map<Trainer>((row) {
+            final description = _textValue(row, [
+              'description',
+              'bio',
+              'about',
+              'expertise',
+              'specialist',
+              'speciality',
+            ]);
             return Trainer(
               name:
                   _textValue(row, ['full_name', 'name', 'trainer_name']) ??
@@ -151,13 +166,15 @@ class AppDataService {
                 'image_url',
                 'image',
               ]),
+              description: description,
               level:
                   _textValue(row, [
                     'level',
                     'qualification',
-                    'specialist',
-                    'speciality',
+                    'certification',
+                    'certificate',
                   ]) ??
+                  description ??
                   Trainer.defaultLevel,
             );
           })

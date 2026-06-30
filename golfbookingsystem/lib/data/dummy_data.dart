@@ -25,12 +25,16 @@ class DummyData {
       name: 'Nordin bin Yahya',
       phoneNumber: '012 537 7396',
       email: null,
+      description:
+          'Specialist in beginner swing basics, stance correction, and driving accuracy.',
       level: 'Professional Amateur( Prof. Am.)',
     ),
     Trainer(
       name: 'Mohd Muhayyuddin bin Md Zain',
       phoneNumber: '011 6514 6767',
       email: 'dingolfzero@gmail.com',
+      description:
+          'Specialist in short game control, putting technique, and guided practice routine.',
       level: 'Professional Amateur( Prof. Am.)',
     ),
   ];

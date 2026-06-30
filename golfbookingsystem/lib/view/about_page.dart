@@ -85,15 +85,15 @@ class AboutPage extends StatelessWidget {
                   title: copy.developmentTeamTitle,
                   children: const [
                     _TeamMember(
-                      name: 'MUHAMMAD HAKIMI ADLY BIN HAZLEE',
+                      name: 'Muhammad Hakimi Adly bin Hazlee',
                       id: 'D20231106511',
                     ),
                     _TeamMember(
-                      name: 'MUHAMMAD ADIB BIN SAMSURI',
+                      name: 'Muhammad Adib bin Samsuri',
                       id: 'D20231106481',
                     ),
                     _TeamMember(
-                      name: 'WALDAN AIMAN BIN NAZRI',
+                      name: 'Waldan Aiman bin Nazri',
                       id: 'D20231106455',
                     ),
                   ],
@@ -218,23 +218,7 @@ class _TeamMember extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            name,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-          const SizedBox(height: 3),
-          Text(
-            id,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontSize: 15,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-        ],
+        children: [Text(name), const SizedBox(height: 3), Text(id)],
       ),
     );
   }
@@ -279,13 +263,13 @@ class _AboutCopy {
     title: 'About the Application',
     projectInformationTitle: 'Project Information',
     projectInformation:
-        'This Web-Based Learning (WBL) project is part of the course DTS3073 - Reka Bentuk dan Pembangunan Aplikasi Mudah Alih at Universiti Pendidikan Sultan Idris (UPSI).',
+        'This Web-Based Learning (WBL) project is part of the course DTS3073 - Mobile Application Design and Development at Universiti Pendidikan Sultan Idris (UPSI).',
     purposeTitle: 'Purpose',
     purpose:
         'This application has been developed for educational purposes only as part of the students\' academic project. It is intended to demonstrate the implementation of a golf driving range booking system and is not a commercial product.',
     developmentPeriodTitle: 'Development Period',
     developmentPeriod:
-        'The project will be developed and completed during Semester 6/2026 until Week 14.',
+        'The project will be developed during Semester 6 of the 2026 academic session, starting from Week 7 and continuing until Week 14, where it will be completed.',
     noticeTitle: 'Notice',
     notice:
         'This application was developed for academic and Work-Based Learning (WBL) purposes. Any request related to maintenance, system modification, feature enhancement, technical support, data management, or further development after Week 15 should be referred to the Faculty of Computing and Meta Technology (META), Universiti Pendidikan Sultan Idris (UPSI).',
@@ -295,29 +279,29 @@ class _AboutCopy {
     courseName: 'Mobile Application Design and Development',
     technologiesTitle: 'Technologies',
     footer:
-        '(c) Work-Based Learning (WBL) Project 2026\nFaculty of Computing and Meta-Technology (META)\nUniversiti Pendidikan Sultan Idris (UPSI)',
+        '© Work-Based Learning (WBL) Project 2026\nFaculty of Computing and Meta-Technology (META)\nUniversiti Pendidikan Sultan Idris (UPSI)',
   );
 
   static const malay = _AboutCopy(
     title: 'Tentang Aplikasi',
     projectInformationTitle: 'Maklumat Projek',
     projectInformation:
-        'Projek Web-Based Learning (WBL) ini merupakan sebahagian daripada kursus DTS3073 - Reka Bentuk dan Pembangunan Aplikasi Mudah Alih di Universiti Pendidikan Sultan Idris (UPSI).',
+        'Projek Pembelajaran Berasaskan Kerja (WBL) ini merupakan sebahagian daripada kursus DTS3073 - Reka Bentuk dan Pembangunan Aplikasi Mudah Alih di Universiti Pendidikan Sultan Idris (UPSI).',
     purposeTitle: 'Tujuan',
     purpose:
-        'Aplikasi ini dibangunkan untuk tujuan pendidikan sahaja sebagai sebahagian daripada projek akademik pelajar. Aplikasi ini bertujuan menunjukkan pelaksanaan sistem tempahan golf driving range dan bukan produk komersial.',
+        'Aplikasi ini dibangunkan untuk tujuan pendidikan sahaja sebagai sebahagian daripada projek akademik pelajar. Aplikasi ini bertujuan untuk menunjukkan pelaksanaan sistem tempahan lapang sasar golf dan bukan merupakan produk komersial.',
     developmentPeriodTitle: 'Tempoh Pembangunan',
     developmentPeriod:
-        'Projek ini akan dibangunkan dan disiapkan sepanjang Semester 6/2026 sehingga Minggu 14.',
+        'Projek ini akan dibangunkan pada Semester 6 sesi akademik 2026, bermula dari Minggu 7 dan diteruskan sehingga Minggu 14, iaitu minggu projek ini akan disiapkan.',
     noticeTitle: 'Notis',
     notice:
-        'Aplikasi ini dibangunkan untuk tujuan akademik dan Work-Based Learning (WBL). Sebarang permintaan berkaitan penyelenggaraan, pengubahsuaian sistem, penambahbaikan ciri, sokongan teknikal, pengurusan data, atau pembangunan lanjut selepas Minggu 15 hendaklah dirujuk kepada Fakulti Komputeran dan Meta Teknologi (META), Universiti Pendidikan Sultan Idris (UPSI).',
+        'Aplikasi ini dibangunkan untuk tujuan akademik dan Pembelajaran Berasaskan Kerja (WBL). Sebarang permintaan berkaitan penyelenggaraan, pengubahsuaian sistem, penambahbaikan ciri, sokongan teknikal, pengurusan data, atau pembangunan lanjut selepas Minggu 15 hendaklah dirujuk kepada Fakulti Komputeran dan Meta-Teknologi (META), Universiti Pendidikan Sultan Idris (UPSI).',
     developmentTeamTitle: 'Pasukan Pembangunan',
     lecturerTitle: 'Pensyarah Kursus',
     courseTitle: 'Kursus',
     courseName: 'Reka Bentuk dan Pembangunan Aplikasi Mudah Alih',
     technologiesTitle: 'Teknologi',
     footer:
-        '(c) Projek Work-Based Learning (WBL) 2026\nFakulti Komputeran dan Meta-Teknologi (META)\nUniversiti Pendidikan Sultan Idris (UPSI)',
+        '© Projek Pembelajaran Berasaskan Kerja (WBL) 2026\nFakulti Komputeran dan Meta-Teknologi (META)\nUniversiti Pendidikan Sultan Idris (UPSI)',
   );
 }

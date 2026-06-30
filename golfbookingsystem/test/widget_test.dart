@@ -141,7 +141,7 @@ void main() {
 
     expect(find.text('About the Application'), findsOneWidget);
     expect(find.text('Development Team'), findsOneWidget);
-    expect(find.text('MUHAMMAD HAKIMI ADLY BIN HAZLEE'), findsOneWidget);
+    expect(find.text('Muhammad Hakimi Adly bin Hazlee'), findsOneWidget);
   });
 
   test('cancelled bookings do not occupy an available slot', () {

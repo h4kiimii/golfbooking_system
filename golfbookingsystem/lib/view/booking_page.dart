@@ -1143,6 +1143,10 @@ class _TrainerPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final detail = trainer.description?.trim().isNotEmpty == true
+        ? trainer.description!.trim()
+        : trainer.level;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -1167,7 +1171,7 @@ class _TrainerPreview extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        trainer.level,
+                        detail,
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ],
@@ -1176,11 +1180,6 @@ class _TrainerPreview extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
-            _TrainerContactRow(
-              icon: Icons.workspace_premium_rounded,
-              text: trainer.level,
-            ),
-            const SizedBox(height: 8),
             _TrainerContactRow(
               icon: Icons.phone_rounded,
               text: trainer.phoneNumber,

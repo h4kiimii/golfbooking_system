@@ -108,6 +108,45 @@ alter table public.feedback_review
   add column if not exists submitted_at timestamptz not null default now(),
   add column if not exists created_at timestamptz not null default now();
 
+create table if not exists public.trainers (
+  id uuid primary key default gen_random_uuid(),
+  full_name text not null,
+  phone text,
+  email text,
+  address text,
+  description text,
+  rate numeric not null default 0,
+  min_booking_hours integer not null default 1,
+  max_booking_hours integer not null default 2,
+  profile_image_url text,
+  status text not null default 'available',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.trainers
+  add column if not exists full_name text,
+  add column if not exists phone text,
+  add column if not exists phone_number text,
+  add column if not exists whatsapp_phone text,
+  add column if not exists email text,
+  add column if not exists address text,
+  add column if not exists description text,
+  add column if not exists level text,
+  add column if not exists qualification text,
+  add column if not exists certification text,
+  add column if not exists rate numeric not null default 0,
+  add column if not exists min_booking_hours integer not null default 1,
+  add column if not exists max_booking_hours integer not null default 2,
+  add column if not exists profile_image_url text,
+  add column if not exists status text not null default 'available',
+  add column if not exists created_at timestamptz not null default now(),
+  add column if not exists updated_at timestamptz not null default now();
+
+update public.trainers
+set description = coalesce(nullif(trim(description), ''), qualification, level)
+where description is null or trim(description) = '';
+
 do $$
 begin
   if exists (
@@ -139,6 +178,16 @@ end $$;
 alter table public.bookings enable row level security;
 alter table public.payments enable row level security;
 alter table public.feedback_review enable row level security;
+alter table public.trainers enable row level security;
+
+drop policy if exists "Anyone can read available trainers" on public.trainers;
+create policy "Anyone can read available trainers"
+  on public.trainers
+  for select
+  using (
+    status is null
+    or lower(trim(status)) in ('active', 'available')
+  );
 
 drop policy if exists "Users can read their own bookings" on public.bookings;
 create policy "Users can read their own bookings"
