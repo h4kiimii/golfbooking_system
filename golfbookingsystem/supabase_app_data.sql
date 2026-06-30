@@ -186,7 +186,7 @@ create policy "Anyone can read available trainers"
   for select
   using (
     status is null
-    or lower(trim(status)) in ('active', 'available')
+    or lower(trim(status::text)) in ('active', 'available')
   );
 
 drop policy if exists "Users can read their own bookings" on public.bookings;
