@@ -59,6 +59,7 @@ class _GolfDrivingRangeBookingAppState
   final List<FeedbackMessage> _feedbackMessages = [];
   ContactSettings _contactSettings = const ContactSettings();
   AppBackgroundSettings _backgroundSettings = const AppBackgroundSettings();
+  List<String> _appDataWarnings = const [];
 
   @override
   void initState() {
@@ -131,9 +132,15 @@ class _GolfDrivingRangeBookingAppState
           ..addAll(data.paymentMethods);
         _contactSettings = data.contactSettings;
         _backgroundSettings = data.backgroundSettings;
+        _appDataWarnings = data.warnings;
       });
     } catch (_) {
-      // Keep bundled fallback data when shared app setup data is unavailable.
+      if (!mounted) return;
+      setState(() {
+        _appDataWarnings = const [
+          'Could not load app setup data from Supabase. Using bundled fallback data.',
+        ];
+      });
     }
   }
 
@@ -202,6 +209,7 @@ class _GolfDrivingRangeBookingAppState
               paymentMethods: _paymentMethods,
               contactSettings: _contactSettings,
               backgroundUrl: _backgroundSettings.appUrl,
+              appDataWarnings: _appDataWarnings,
               feedbackMessages: _feedbackMessages,
               currentPassword: _sessionPassword!,
               onPasswordChanged: _handlePasswordChanged,

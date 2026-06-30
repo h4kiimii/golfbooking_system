@@ -13,6 +13,7 @@ class AppDataSnapshot {
     required this.paymentMethods,
     required this.contactSettings,
     required this.backgroundSettings,
+    this.warnings = const [],
   });
 
   final List<DrivingRangePackage> packages;
@@ -22,6 +23,17 @@ class AppDataSnapshot {
   final List<String> paymentMethods;
   final ContactSettings contactSettings;
   final AppBackgroundSettings backgroundSettings;
+  final List<String> warnings;
+}
+
+class AppDataLoadException implements Exception {
+  const AppDataLoadException(this.message, [this.cause]);
+
+  final String message;
+  final Object? cause;
+
+  @override
+  String toString() => cause == null ? message : '$message: $cause';
 }
 
 class ContactSettings {
@@ -68,29 +80,105 @@ class AppDataService {
   final SupabaseClient _client;
 
   Future<AppDataSnapshot> load() async {
-    final packages = await _loadPackages();
-    final trainers = await _loadTrainers();
-    final teeTimes = await _loadTeeTimes();
-    final lanes = await _loadDrivingRangeLanes();
-    final paymentMethods = await _loadPaymentMethods();
-    final contactSettings = await _loadContactSettings();
-    final backgroundSettings = await _loadBackgroundSettings();
+    final warnings = <String>[];
+    final packages = await _loadListSection(
+      label: 'driving range packages',
+      load: _loadPackages,
+      fallback: DummyData.drivingRangePackages,
+      warnings: warnings,
+    );
+    final trainers = await _loadListSection(
+      label: 'trainers',
+      load: _loadTrainers,
+      fallback: DummyData.trainers,
+      warnings: warnings,
+    );
+    final teeTimes = await _loadListSection(
+      label: 'tee times',
+      load: _loadTeeTimes,
+      fallback: DummyData.availableTimes,
+      warnings: warnings,
+    );
+    final lanes = await _loadListSection(
+      label: 'driving range lanes',
+      load: _loadDrivingRangeLanes,
+      fallback: DummyData.drivingRangeLanes,
+      warnings: warnings,
+    );
+    final paymentMethods = await _loadListSection(
+      label: 'payment methods',
+      load: _loadPaymentMethods,
+      fallback: DummyData.paymentMethods,
+      warnings: warnings,
+    );
+    final contactSettings = await _loadObjectSection(
+      label: 'contact settings',
+      load: _loadContactSettings,
+      fallback: const ContactSettings(),
+      warnings: warnings,
+    );
+    final backgroundSettings = await _loadObjectSection(
+      label: 'background settings',
+      load: _loadBackgroundSettings,
+      fallback: const AppBackgroundSettings(),
+      warnings: warnings,
+    );
 
     return AppDataSnapshot(
-      packages: packages.isEmpty
-          ? List.of(DummyData.drivingRangePackages)
-          : packages,
-      trainers: trainers.isEmpty ? List.of(DummyData.trainers) : trainers,
-      teeTimes: teeTimes.isEmpty ? List.of(DummyData.availableTimes) : teeTimes,
-      drivingRangeLanes: lanes.isEmpty
-          ? List.of(DummyData.drivingRangeLanes)
-          : lanes,
-      paymentMethods: paymentMethods.isEmpty
-          ? List.of(DummyData.paymentMethods)
-          : paymentMethods,
+      packages: packages,
+      trainers: trainers,
+      teeTimes: teeTimes,
+      drivingRangeLanes: lanes,
+      paymentMethods: paymentMethods,
       contactSettings: contactSettings,
       backgroundSettings: backgroundSettings,
+      warnings: warnings,
     );
+  }
+
+  Future<List<T>> _loadListSection<T>({
+    required String label,
+    required Future<List<T>> Function() load,
+    required List<T> fallback,
+    required List<String> warnings,
+  }) async {
+    try {
+      final values = await load();
+      if (values.isEmpty) {
+        warnings.add(
+          'No $label found in Supabase. Using bundled fallback data.',
+        );
+        return List<T>.of(fallback);
+      }
+      return values;
+    } on AppDataLoadException catch (error) {
+      warnings.add('${error.message}. Using bundled fallback data.');
+      return List<T>.of(fallback);
+    } catch (error) {
+      warnings.add(
+        'Could not load $label from Supabase. Using bundled fallback data.',
+      );
+      return List<T>.of(fallback);
+    }
+  }
+
+  Future<T> _loadObjectSection<T>({
+    required String label,
+    required Future<T> Function() load,
+    required T fallback,
+    required List<String> warnings,
+  }) async {
+    try {
+      return await load();
+    } on AppDataLoadException catch (error) {
+      warnings.add('${error.message}. Using bundled fallback data.');
+      return fallback;
+    } catch (error) {
+      warnings.add(
+        'Could not load $label from Supabase. Using bundled fallback data.',
+      );
+      return fallback;
+    }
   }
 
   Future<List<DrivingRangePackage>> _loadPackages() async {
@@ -120,8 +208,11 @@ class AppDataService {
           })
           .where((package) => package.balls > 0)
           .toList(growable: false);
-    } catch (_) {
-      return const [];
+    } catch (error) {
+      throw AppDataLoadException(
+        'Could not load driving range packages from Supabase',
+        error,
+      );
     }
   }
 
@@ -180,8 +271,11 @@ class AppDataService {
           })
           .where((trainer) => trainer.name.trim().isNotEmpty)
           .toList(growable: false);
-    } catch (_) {
-      return const [];
+    } catch (error) {
+      throw AppDataLoadException(
+        'Could not load trainers from Supabase',
+        error,
+      );
     }
   }
 
@@ -203,8 +297,11 @@ class AppDataService {
         if (time != null) times.add(time);
       }
       return times.toList(growable: false);
-    } catch (_) {
-      return const [];
+    } catch (error) {
+      throw AppDataLoadException(
+        'Could not load tee times from Supabase',
+        error,
+      );
     }
   }
 
@@ -227,8 +324,11 @@ class AppDataService {
       }
       lanes.sort();
       return lanes;
-    } catch (_) {
-      return const [];
+    } catch (error) {
+      throw AppDataLoadException(
+        'Could not load driving range lanes from Supabase',
+        error,
+      );
     }
   }
 
@@ -246,8 +346,11 @@ class AppDataService {
           .map((value) => value.trim())
           .where((value) => value.isNotEmpty)
           .toList(growable: false);
-    } catch (_) {
-      return const [];
+    } catch (error) {
+      throw AppDataLoadException(
+        'Could not load payment methods from Supabase',
+        error,
+      );
     }
   }
 
@@ -280,8 +383,11 @@ class AppDataService {
         address: values['contact_address'],
         operatingHours: values['operating_hours'],
       );
-    } catch (_) {
-      return fallback;
+    } catch (error) {
+      throw AppDataLoadException(
+        'Could not load contact settings from Supabase',
+        error,
+      );
     }
   }
 
@@ -305,8 +411,11 @@ class AppDataService {
         if (key == 'app_background_url') appUrl = value;
       }
       return AppBackgroundSettings(loginUrl: loginUrl, appUrl: appUrl);
-    } catch (_) {
-      return const AppBackgroundSettings();
+    } catch (error) {
+      throw AppDataLoadException(
+        'Could not load background settings from Supabase',
+        error,
+      );
     }
   }
 

@@ -30,6 +30,7 @@ class AppShell extends StatefulWidget {
     required this.paymentMethods,
     this.contactSettings = const ContactSettings(),
     this.backgroundUrl,
+    this.appDataWarnings = const [],
     required this.feedbackMessages,
     required this.currentPassword,
     required this.onPasswordChanged,
@@ -51,6 +52,7 @@ class AppShell extends StatefulWidget {
   final List<String> paymentMethods;
   final ContactSettings contactSettings;
   final String? backgroundUrl;
+  final List<String> appDataWarnings;
   final List<FeedbackMessage> feedbackMessages;
   final String currentPassword;
   final ValueChanged<String> onPasswordChanged;
@@ -295,7 +297,15 @@ class _AppShellState extends State<AppShell> {
                 ? const Center(child: CircularProgressIndicator())
                 : KeyedSubtree(
                     key: ValueKey<int>(_currentIndex),
-                    child: pages[_currentIndex],
+                    child: Column(
+                      children: [
+                        if (widget.appDataWarnings.isNotEmpty)
+                          _AppDataWarningBanner(
+                            warnings: widget.appDataWarnings,
+                          ),
+                        Expanded(child: pages[_currentIndex]),
+                      ],
+                    ),
                   ),
           ),
         ),
@@ -340,6 +350,51 @@ class _AppShellState extends State<AppShell> {
               label: _text('Profile', 'Profil'),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AppDataWarningBanner extends StatelessWidget {
+  const _AppDataWarningBanner({required this.warnings});
+
+  final List<String> warnings;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Theme.of(context).colorScheme.errorContainer,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Row(
+            children: [
+              Icon(
+                Icons.warning_amber_rounded,
+                color: Theme.of(context).colorScheme.onErrorContainer,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  warnings.first,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onErrorContainer,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              if (warnings.length > 1)
+                Text(
+                  '+${warnings.length - 1}',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onErrorContainer,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
