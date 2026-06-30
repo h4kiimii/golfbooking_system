@@ -6,8 +6,10 @@ import '../model/feedback_message.dart';
 import '../model/trainer.dart';
 import '../model/user_profile.dart';
 import '../services/app_data_service.dart';
+import '../services/app_language.dart';
 import '../services/booking_service.dart';
 import '../theme/app_theme.dart';
+import 'about_page.dart';
 import 'booking_page.dart';
 import 'contact_page.dart';
 import 'home_page.dart';
@@ -36,6 +38,8 @@ class AppShell extends StatefulWidget {
     required this.onLogout,
     required this.isDarkMode,
     required this.onThemeChanged,
+    required this.language,
+    required this.onLanguageChanged,
   });
 
   final UserProfile profile;
@@ -55,6 +59,8 @@ class AppShell extends StatefulWidget {
   final VoidCallback onLogout;
   final bool isDarkMode;
   final ValueChanged<bool> onThemeChanged;
+  final AppLanguage language;
+  final ValueChanged<AppLanguage> onLanguageChanged;
 
   @override
   State<AppShell> createState() => _AppShellState();
@@ -217,10 +223,14 @@ class _AppShellState extends State<AppShell> {
     widget.onDataChanged();
   }
 
+  String _text(String english, String malay) {
+    return widget.language == AppLanguage.malay ? malay : english;
+  }
+
   @override
   Widget build(BuildContext context) {
     final pages = [
-      HomePage(onNavigate: _goToTab),
+      HomePage(language: widget.language, onNavigate: _goToTab),
       BookingPage(
         packages: widget.packages,
         trainers: widget.trainers,
@@ -242,7 +252,9 @@ class _AppShellState extends State<AppShell> {
         profile: widget.profile,
         contactSettings: widget.contactSettings,
         onFeedbackSubmitted: _submitFeedback,
+        language: widget.language,
       ),
+      AboutPage(language: widget.language),
       ProfilePage(
         profile: widget.profile,
         currentPassword: widget.currentPassword,
@@ -251,6 +263,8 @@ class _AppShellState extends State<AppShell> {
         onLogout: widget.onLogout,
         isDarkMode: widget.isDarkMode,
         onThemeChanged: widget.onThemeChanged,
+        language: widget.language,
+        onLanguageChanged: widget.onLanguageChanged,
       ),
     ];
 
@@ -300,26 +314,30 @@ class _AppShellState extends State<AppShell> {
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: _goToTab,
-          items: const [
+          items: [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home_rounded),
-              label: 'Home',
+              icon: const Icon(Icons.home_rounded),
+              label: _text('Home', 'Utama'),
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.event_available_rounded),
-              label: 'Booking',
+              icon: const Icon(Icons.event_available_rounded),
+              label: _text('Booking', 'Tempahan'),
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.receipt_long_rounded),
-              label: 'My Bookings',
+              icon: const Icon(Icons.receipt_long_rounded),
+              label: _text('My Bookings', 'Tempahan Saya'),
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.contact_mail_rounded),
-              label: 'Feedback',
+              icon: const Icon(Icons.contact_mail_rounded),
+              label: _text('Feedback', 'Maklum Balas'),
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.person_rounded),
-              label: 'Profile',
+              icon: const Icon(Icons.info_rounded),
+              label: _text('About', 'Tentang'),
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.person_rounded),
+              label: _text('Profile', 'Profil'),
             ),
           ],
         ),

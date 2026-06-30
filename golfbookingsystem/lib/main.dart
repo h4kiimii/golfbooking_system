@@ -11,6 +11,7 @@ import 'model/feedback_message.dart';
 import 'model/trainer.dart';
 import 'model/user_profile.dart';
 import 'services/account_service.dart';
+import 'services/app_language.dart';
 import 'services/app_data_service.dart';
 import 'theme/app_theme.dart';
 import 'view/auth_page.dart';
@@ -38,11 +39,13 @@ class GolfDrivingRangeBookingApp extends StatefulWidget {
 class _GolfDrivingRangeBookingAppState
     extends State<GolfDrivingRangeBookingApp> {
   static const _darkModeKey = 'dark_mode_enabled';
+  static const _languageKey = 'app_language';
   static const _loginSplashDuration = Duration(milliseconds: 1800);
 
   UserProfile? _profile;
   String? _sessionPassword;
   bool _isDarkMode = false;
+  AppLanguage _language = AppLanguage.english;
   bool _showLoginSplash = true;
   Timer? _loginSplashTimer;
   final List<DrivingRangePackage> _packages = List.of(
@@ -65,6 +68,7 @@ class _GolfDrivingRangeBookingAppState
       setState(() => _showLoginSplash = false);
     });
     _loadThemeMode();
+    _loadLanguage();
     _loadSupabaseAppData();
   }
 
@@ -86,6 +90,23 @@ class _GolfDrivingRangeBookingAppState
     setState(() => _isDarkMode = enabled);
     final preferences = await SharedPreferences.getInstance();
     await preferences.setBool(_darkModeKey, enabled);
+  }
+
+  Future<void> _loadLanguage() async {
+    final preferences = await SharedPreferences.getInstance();
+    final value = preferences.getString(_languageKey);
+    if (!mounted) return;
+    setState(() {
+      _language = value == AppLanguage.malay.name
+          ? AppLanguage.malay
+          : AppLanguage.english;
+    });
+  }
+
+  Future<void> _handleLanguageChanged(AppLanguage language) async {
+    setState(() => _language = language);
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setString(_languageKey, language.name);
   }
 
   Future<void> _loadSupabaseAppData() async {
@@ -167,6 +188,8 @@ class _GolfDrivingRangeBookingAppState
           : _profile == null
           ? AuthPage(
               backgroundUrl: _backgroundSettings.loginUrl,
+              language: _language,
+              onLanguageChanged: _handleLanguageChanged,
               onAuthenticated: _handleLogin,
             )
           : AppShell(
@@ -187,6 +210,8 @@ class _GolfDrivingRangeBookingAppState
               onLogout: _handleLogout,
               isDarkMode: _isDarkMode,
               onThemeChanged: _handleThemeChanged,
+              language: _language,
+              onLanguageChanged: _handleLanguageChanged,
             ),
     );
   }

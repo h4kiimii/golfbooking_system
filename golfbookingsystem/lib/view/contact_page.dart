@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../model/feedback_message.dart';
 import '../model/user_profile.dart';
 import '../services/app_data_service.dart';
+import '../services/app_language.dart';
 import 'widgets/info_tile.dart';
 
 class ContactPage extends StatefulWidget {
@@ -11,11 +12,13 @@ class ContactPage extends StatefulWidget {
     required this.profile,
     required this.contactSettings,
     required this.onFeedbackSubmitted,
+    required this.language,
   });
 
   final UserProfile profile;
   final ContactSettings contactSettings;
   final ValueChanged<FeedbackMessage> onFeedbackSubmitted;
+  final AppLanguage language;
 
   @override
   State<ContactPage> createState() => _ContactPageState();
@@ -60,8 +63,19 @@ class _ContactPageState extends State<ContactPage> {
     _messageController.clear();
     setState(() => _category = 'General Feedback');
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Feedback submitted to the administrator.')),
+      SnackBar(
+        content: Text(
+          _text(
+            'Feedback submitted to the administrator.',
+            'Maklum balas telah dihantar kepada pentadbir.',
+          ),
+        ),
+      ),
     );
+  }
+
+  String _text(String english, String malay) {
+    return widget.language == AppLanguage.malay ? malay : english;
   }
 
   @override
@@ -70,39 +84,45 @@ class _ContactPageState extends State<ContactPage> {
       padding: const EdgeInsets.all(20),
       children: [
         Text(
-          'Contact & Feedback',
+          _text('Contact & Feedback', 'Hubungi & Maklum Balas'),
           style: Theme.of(context).textTheme.headlineMedium,
         ),
         const SizedBox(height: 6),
-        const Text(
-          'Contact us directly or send feedback through the form below.',
+        Text(
+          _text(
+            'Contact us directly or send feedback through the form below.',
+            'Hubungi kami secara terus atau hantar maklum balas melalui borang di bawah.',
+          ),
         ),
         const SizedBox(height: 14),
         InfoTile(
           icon: Icons.phone_rounded,
-          title: 'Phone number',
+          title: _text('Phone number', 'Nombor telefon'),
           description: widget.contactSettings.phone,
         ),
         const SizedBox(height: 12),
         InfoTile(
           icon: Icons.email_rounded,
-          title: 'Email',
+          title: _text('Email', 'Emel'),
           description: widget.contactSettings.email,
         ),
         const SizedBox(height: 12),
         InfoTile(
           icon: Icons.location_on_rounded,
-          title: 'Address',
+          title: _text('Address', 'Alamat'),
           description: widget.contactSettings.address,
         ),
         const SizedBox(height: 12),
         InfoTile(
           icon: Icons.access_time_rounded,
-          title: 'Operating hours',
+          title: _text('Operating hours', 'Waktu operasi'),
           description: widget.contactSettings.operatingHours,
         ),
         const SizedBox(height: 24),
-        Text('Send Feedback', style: Theme.of(context).textTheme.titleLarge),
+        Text(
+          _text('Send Feedback', 'Hantar Maklum Balas'),
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
         const SizedBox(height: 12),
         Form(
           key: _formKey,
@@ -110,9 +130,9 @@ class _ContactPageState extends State<ContactPage> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  prefixIcon: Icon(Icons.person_rounded),
+                decoration: InputDecoration(
+                  labelText: _text('Name', 'Nama'),
+                  prefixIcon: const Icon(Icons.person_rounded),
                 ),
                 validator: _required,
               ),
@@ -120,44 +140,54 @@ class _ContactPageState extends State<ContactPage> {
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  prefixIcon: Icon(Icons.mail_rounded),
+                decoration: InputDecoration(
+                  labelText: _text('Email', 'Emel'),
+                  prefixIcon: const Icon(Icons.mail_rounded),
                 ),
                 validator: (value) {
                   final email = value?.trim() ?? '';
-                  if (email.isEmpty) return 'Enter your email';
-                  if (!email.contains('@')) return 'Enter a valid email';
+                  if (email.isEmpty) {
+                    return _text('Enter your email', 'Masukkan emel anda');
+                  }
+                  if (!email.contains('@')) {
+                    return _text(
+                      'Enter a valid email',
+                      'Masukkan emel yang sah',
+                    );
+                  }
                   return null;
                 },
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _category,
-                decoration: const InputDecoration(
-                  labelText: 'Feedback category',
-                  prefixIcon: Icon(Icons.category_rounded),
+                decoration: InputDecoration(
+                  labelText: _text(
+                    'Feedback category',
+                    'Kategori maklum balas',
+                  ),
+                  prefixIcon: const Icon(Icons.category_rounded),
                 ),
-                items: const [
+                items: [
                   DropdownMenuItem(
                     value: 'General Feedback',
-                    child: Text('General Feedback'),
+                    child: Text(_text('General Feedback', 'Maklum Balas Umum')),
                   ),
                   DropdownMenuItem(
                     value: 'Booking Issue',
-                    child: Text('Booking Issue'),
+                    child: Text(_text('Booking Issue', 'Isu Tempahan')),
                   ),
                   DropdownMenuItem(
                     value: 'Payment Issue',
-                    child: Text('Payment Issue'),
+                    child: Text(_text('Payment Issue', 'Isu Pembayaran')),
                   ),
                   DropdownMenuItem(
                     value: 'Suggestion',
-                    child: Text('Suggestion'),
+                    child: Text(_text('Suggestion', 'Cadangan')),
                   ),
                   DropdownMenuItem(
                     value: 'Complaint',
-                    child: Text('Complaint'),
+                    child: Text(_text('Complaint', 'Aduan')),
                   ),
                 ],
                 onChanged: (value) {
@@ -168,10 +198,10 @@ class _ContactPageState extends State<ContactPage> {
               TextFormField(
                 controller: _messageController,
                 maxLines: 5,
-                decoration: const InputDecoration(
-                  labelText: 'Feedback message',
+                decoration: InputDecoration(
+                  labelText: _text('Feedback message', 'Mesej maklum balas'),
                   alignLabelWithHint: true,
-                  prefixIcon: Icon(Icons.feedback_rounded),
+                  prefixIcon: const Icon(Icons.feedback_rounded),
                 ),
                 validator: _required,
               ),
@@ -181,7 +211,7 @@ class _ContactPageState extends State<ContactPage> {
                 child: FilledButton.icon(
                   onPressed: _submitFeedback,
                   icon: const Icon(Icons.send_rounded),
-                  label: const Text('Submit Feedback'),
+                  label: Text(_text('Submit Feedback', 'Hantar Maklum Balas')),
                 ),
               ),
             ],
@@ -193,7 +223,7 @@ class _ContactPageState extends State<ContactPage> {
 
   String? _required(String? value) {
     return value == null || value.trim().isEmpty
-        ? 'This field is required'
+        ? _text('This field is required', 'Medan ini diperlukan')
         : null;
   }
 }

@@ -64,7 +64,9 @@ void main() {
     await tester.tap(find.text('Log In'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Profile').last);
+    tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar)).onTap!(
+      5,
+    );
     await tester.pumpAndSettle();
     await tester.drag(find.byType(Scrollable).last, const Offset(0, -400));
     await tester.pumpAndSettle();
@@ -104,17 +106,42 @@ void main() {
     await tester.tap(find.text('Log In'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Profile').last);
+    tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar)).onTap!(
+      5,
+    );
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('Dark Mode'));
+    await tester.scrollUntilVisible(
+      find.byType(SwitchListTile),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
     await tester.pumpAndSettle();
-    expect(find.text('Dark Mode'), findsOneWidget);
-    await tester.tap(find.text('Dark Mode'));
+    expect(find.byType(SwitchListTile), findsOneWidget);
+    await tester.tap(find.byType(SwitchListTile));
     await tester.pumpAndSettle();
 
     final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
     expect(materialApp.themeMode, ThemeMode.dark);
+  });
+
+  testWidgets('about tab is between feedback and profile', (tester) async {
+    await pumpAppPastSplash(tester);
+
+    await tester.enterText(
+      find.byType(TextFormField).at(0),
+      'user@example.com',
+    );
+    await tester.enterText(find.byType(TextFormField).at(1), 'password');
+    await tester.tap(find.text('Log In'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.info_rounded).last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('About the Application'), findsOneWidget);
+    expect(find.text('Development Team'), findsOneWidget);
+    expect(find.text('MUHAMMAD HAKIMI ADLY BIN HAZLEE'), findsOneWidget);
   });
 
   test('cancelled bookings do not occupy an available slot', () {

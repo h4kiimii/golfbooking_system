@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../model/user_profile.dart';
 import '../services/account_service.dart';
+import '../services/app_language.dart';
 import 'widgets/info_tile.dart';
 import 'widgets/profile_image.dart';
 
@@ -16,6 +17,8 @@ class ProfilePage extends StatelessWidget {
     required this.onLogout,
     required this.isDarkMode,
     required this.onThemeChanged,
+    required this.language,
+    required this.onLanguageChanged,
   });
 
   final UserProfile profile;
@@ -25,6 +28,12 @@ class ProfilePage extends StatelessWidget {
   final VoidCallback onLogout;
   final bool isDarkMode;
   final ValueChanged<bool> onThemeChanged;
+  final AppLanguage language;
+  final ValueChanged<AppLanguage> onLanguageChanged;
+
+  String _text(String english, String malay) {
+    return language == AppLanguage.malay ? malay : english;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +52,12 @@ class ProfilePage extends StatelessWidget {
                     profile.fullName,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
-                  Text('Logged in with ${profile.loginProvider}'),
+                  Text(
+                    _text(
+                      'Logged in with ${profile.loginProvider}',
+                      'Log masuk melalui ${profile.loginProvider}',
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -52,27 +66,60 @@ class ProfilePage extends StatelessWidget {
         const SizedBox(height: 20),
         InfoTile(
           icon: Icons.email_rounded,
-          title: 'Email',
+          title: _text('Email', 'Emel'),
           description: profile.email,
         ),
         const SizedBox(height: 12),
         InfoTile(
           icon: Icons.cake_rounded,
-          title: 'Age and birthday',
-          description:
-              '${profile.age} years old - ${profile.birthday.day}/${profile.birthday.month}/${profile.birthday.year}',
+          title: _text('Age and birthday', 'Umur dan tarikh lahir'),
+          description: _text(
+            '${profile.age} years old - ${profile.birthday.day}/${profile.birthday.month}/${profile.birthday.year}',
+            '${profile.age} tahun - ${profile.birthday.day}/${profile.birthday.month}/${profile.birthday.year}',
+          ),
         ),
         const SizedBox(height: 12),
         InfoTile(
           icon: Icons.phone_rounded,
-          title: 'Phone number',
+          title: _text('Phone number', 'Nombor telefon'),
           description: profile.phoneNumber,
         ),
         const SizedBox(height: 12),
         InfoTile(
           icon: Icons.home_rounded,
-          title: 'Address',
+          title: _text('Address', 'Alamat'),
           description: profile.address,
+        ),
+        const SizedBox(height: 18),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                const Icon(Icons.translate_rounded),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    _text('Language', 'Bahasa'),
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                SegmentedButton<AppLanguage>(
+                  segments: const [
+                    ButtonSegment(
+                      value: AppLanguage.english,
+                      label: Text('EN'),
+                    ),
+                    ButtonSegment(value: AppLanguage.malay, label: Text('BM')),
+                  ],
+                  selected: {language},
+                  onSelectionChanged: (selection) {
+                    onLanguageChanged(selection.first);
+                  },
+                ),
+              ],
+            ),
+          ),
         ),
         const SizedBox(height: 18),
         Card(
@@ -80,27 +127,32 @@ class ProfilePage extends StatelessWidget {
             value: isDarkMode,
             onChanged: onThemeChanged,
             secondary: const Icon(Icons.dark_mode_rounded),
-            title: const Text('Dark Mode'),
-            subtitle: const Text('Use the darker admin-style app theme'),
+            title: Text(_text('Dark Mode', 'Mod Gelap')),
+            subtitle: Text(
+              _text(
+                'Use the darker admin-style app theme',
+                'Gunakan tema aplikasi yang lebih gelap',
+              ),
+            ),
           ),
         ),
         const SizedBox(height: 18),
         FilledButton.icon(
           onPressed: () => _showEditProfileSheet(context),
           icon: const Icon(Icons.edit_rounded),
-          label: const Text('Edit Personal Info'),
+          label: Text(_text('Edit Personal Info', 'Edit Maklumat Peribadi')),
         ),
         const SizedBox(height: 10),
         OutlinedButton.icon(
           onPressed: () => _showChangePasswordSheet(context),
           icon: const Icon(Icons.password_rounded),
-          label: const Text('Change Password'),
+          label: Text(_text('Change Password', 'Tukar Kata Laluan')),
         ),
         const SizedBox(height: 10),
         OutlinedButton.icon(
           onPressed: onLogout,
           icon: const Icon(Icons.logout_rounded),
-          label: const Text('Log Out'),
+          label: Text(_text('Log Out', 'Log Keluar')),
         ),
       ],
     );

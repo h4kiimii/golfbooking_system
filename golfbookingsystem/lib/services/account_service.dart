@@ -30,8 +30,8 @@ class AccountService {
     final profile = await _getOrCreateProfile(
       userId: user.id,
       email: user.email ?? email,
-      fallback: _defaultProfile(
-        userId: user.id,
+      fallback: _profileFromAuthUser(
+        user: user,
         email: user.email ?? email,
         loginProvider: 'User Email',
       ),
@@ -49,6 +49,9 @@ class AccountService {
       password: password,
       data: {
         'full_name': profile.fullName,
+        'age': profile.age,
+        'birthday': profile.birthday.toIso8601String().split('T').first,
+        'address': profile.address,
         'phone_number': profile.phoneNumber,
       },
     );
@@ -165,6 +168,36 @@ class AccountService {
       phoneNumber: '+60 12-345 6789',
       loginProvider: loginProvider,
     );
+  }
+
+  UserProfile _profileFromAuthUser({
+    required User user,
+    required String email,
+    required String loginProvider,
+  }) {
+    final metadata = user.userMetadata ?? const <String, dynamic>{};
+    final defaultProfile = _defaultProfile(
+      userId: user.id,
+      email: email,
+      loginProvider: loginProvider,
+    );
+    final birthday = DateTime.tryParse((metadata['birthday'] as String?) ?? '');
+
+    return defaultProfile.copyWith(
+      fullName: _metadataText(metadata, 'full_name') ?? defaultProfile.fullName,
+      age: _metadataText(metadata, 'age') ?? defaultProfile.age,
+      birthday: birthday ?? defaultProfile.birthday,
+      address: _metadataText(metadata, 'address') ?? defaultProfile.address,
+      phoneNumber:
+          _metadataText(metadata, 'phone_number') ??
+          _metadataText(metadata, 'phone') ??
+          defaultProfile.phoneNumber,
+    );
+  }
+
+  String? _metadataText(Map<String, dynamic> metadata, String key) {
+    final value = metadata[key]?.toString().trim();
+    return value == null || value.isEmpty ? null : value;
   }
 
   String _contentTypeForExtension(String extension) {

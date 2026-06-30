@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../model/auth_session.dart';
 import '../model/user_profile.dart';
 import '../services/account_service.dart';
+import '../services/app_language.dart';
 import '../theme/app_theme.dart';
 import 'widgets/app_background.dart';
 import 'widgets/app_logo.dart';
@@ -13,10 +14,14 @@ class AuthPage extends StatefulWidget {
   const AuthPage({
     super.key,
     this.backgroundUrl,
+    required this.language,
+    required this.onLanguageChanged,
     required this.onAuthenticated,
   });
 
   final String? backgroundUrl;
+  final AppLanguage language;
+  final ValueChanged<AppLanguage> onLanguageChanged;
   final ValueChanged<AuthSession> onAuthenticated;
 
   @override
@@ -79,6 +84,10 @@ class _AuthPageState extends State<AuthPage> {
     );
   }
 
+  String _text(String english, String malay) {
+    return widget.language == AppLanguage.malay ? malay : english;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -103,7 +112,9 @@ class _AuthPageState extends State<AuthPage> {
                 Builder(
                   builder: (context) {
                     return Text(
-                      _isSignUp ? 'Create User Account' : 'Welcome Back',
+                      _isSignUp
+                          ? _text('Create User Account', 'Daftar Akaun')
+                          : _text('Welcome Back', 'Selamat Kembali'),
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headlineMedium,
                     );
@@ -120,10 +131,33 @@ class _AuthPageState extends State<AuthPage> {
                   },
                 ),
                 const SizedBox(height: 24),
+                Align(
+                  alignment: Alignment.center,
+                  child: SegmentedButton<AppLanguage>(
+                    segments: const [
+                      ButtonSegment(
+                        value: AppLanguage.english,
+                        icon: Icon(Icons.language_rounded),
+                        label: Text('English'),
+                      ),
+                      ButtonSegment(
+                        value: AppLanguage.malay,
+                        icon: Icon(Icons.translate_rounded),
+                        label: Text('BM'),
+                      ),
+                    ],
+                    selected: {widget.language},
+                    onSelectionChanged: (selection) {
+                      widget.onLanguageChanged(selection.first);
+                    },
+                  ),
+                ),
+                const SizedBox(height: 18),
                 if (_isSignUp)
-                  _SignUpForm(onSubmit: _signUp)
+                  _SignUpForm(language: widget.language, onSubmit: _signUp)
                 else
                   _LoginForm(
+                    language: widget.language,
                     onSubmit: _login,
                     onPasswordResetRequested: _sendPasswordReset,
                   ),
@@ -132,8 +166,14 @@ class _AuthPageState extends State<AuthPage> {
                   onPressed: () => setState(() => _isSignUp = !_isSignUp),
                   child: Text(
                     _isSignUp
-                        ? 'Already have an account? Log in'
-                        : 'New user? Create an account',
+                        ? _text(
+                            'Already have an account? Log in',
+                            'Sudah ada akaun? Log masuk',
+                          )
+                        : _text(
+                            'New user? Create an account',
+                            'Pengguna baharu? Daftar akaun',
+                          ),
                   ),
                 ),
               ],
@@ -147,10 +187,12 @@ class _AuthPageState extends State<AuthPage> {
 
 class _LoginForm extends StatefulWidget {
   const _LoginForm({
+    required this.language,
     required this.onSubmit,
     required this.onPasswordResetRequested,
   });
 
+  final AppLanguage language;
   final Future<void> Function(String email, String password) onSubmit;
   final Future<void> Function(String email) onPasswordResetRequested;
 
@@ -215,6 +257,10 @@ class _LoginFormState extends State<_LoginForm> {
     }
   }
 
+  String _text(String english, String malay) {
+    return widget.language == AppLanguage.malay ? malay : english;
+  }
+
   Future<void> _loadRememberedLogin() async {
     final preferences = await SharedPreferences.getInstance();
     final email = preferences.getString(_rememberEmailKey) ?? '';
@@ -256,15 +302,14 @@ class _LoginFormState extends State<_LoginForm> {
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
             decoration: const InputDecoration(
-              labelText: 'Email',
               prefixIcon: Icon(Icons.email_rounded),
-            ),
+            ).copyWith(labelText: _text('Email', 'Emel')),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return 'Enter your email';
+                return _text('Enter your email', 'Masukkan emel anda');
               }
               if (!value.contains('@')) {
-                return 'Enter a valid email';
+                return _text('Enter a valid email', 'Masukkan emel yang sah');
               }
               return null;
             },
@@ -276,10 +321,12 @@ class _LoginFormState extends State<_LoginForm> {
             enableSuggestions: false,
             autocorrect: false,
             decoration: InputDecoration(
-              labelText: 'Password',
+              labelText: _text('Password', 'Kata laluan'),
               prefixIcon: const Icon(Icons.lock_rounded),
               suffixIcon: IconButton(
-                tooltip: _showPassword ? 'Hide password' : 'Show password',
+                tooltip: _showPassword
+                    ? _text('Hide password', 'Sembunyikan kata laluan')
+                    : _text('Show password', 'Papar kata laluan'),
                 onPressed: () {
                   setState(() => _showPassword = !_showPassword);
                 },
@@ -291,7 +338,10 @@ class _LoginFormState extends State<_LoginForm> {
               ),
             ),
             validator: (value) => value == null || value.length < 6
-                ? 'Password must be at least 6 characters'
+                ? _text(
+                    'Password must be at least 6 characters',
+                    'Kata laluan mesti sekurang-kurangnya 6 aksara',
+                  )
                 : null,
           ),
           Row(
@@ -305,12 +355,12 @@ class _LoginFormState extends State<_LoginForm> {
                   controlAffinity: ListTileControlAffinity.leading,
                   dense: true,
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Remember me'),
+                  title: Text(_text('Remember me', 'Ingat saya')),
                 ),
               ),
               TextButton(
                 onPressed: _isLoading ? null : _sendPasswordReset,
-                child: const Text('Forgot Password?'),
+                child: Text(_text('Forgot Password?', 'Lupa Kata Laluan?')),
               ),
             ],
           ),
@@ -320,7 +370,11 @@ class _LoginFormState extends State<_LoginForm> {
             child: FilledButton.icon(
               onPressed: _isLoading ? null : _login,
               icon: const Icon(Icons.login_rounded),
-              label: Text(_isLoading ? 'Logging In...' : 'Log In'),
+              label: Text(
+                _isLoading
+                    ? _text('Logging In...', 'Sedang Log Masuk...')
+                    : _text('Log In', 'Log Masuk'),
+              ),
             ),
           ),
         ],
@@ -331,9 +385,13 @@ class _LoginFormState extends State<_LoginForm> {
   Future<void> _sendPasswordReset() async {
     final email = _emailController.text.trim();
     if (email.isEmpty || !email.contains('@')) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Enter your email first.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _text('Enter your email first.', 'Masukkan emel anda dahulu.'),
+          ),
+        ),
+      );
       return;
     }
 
@@ -342,7 +400,14 @@ class _LoginFormState extends State<_LoginForm> {
       await widget.onPasswordResetRequested(email);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Password reset email sent to $email.')),
+        SnackBar(
+          content: Text(
+            _text(
+              'Password reset email sent to $email.',
+              'Emel tetapan semula kata laluan telah dihantar ke $email.',
+            ),
+          ),
+        ),
       );
     } on AuthException catch (error) {
       if (!mounted) return;
@@ -367,8 +432,9 @@ class _LoginFormState extends State<_LoginForm> {
 }
 
 class _SignUpForm extends StatefulWidget {
-  const _SignUpForm({required this.onSubmit});
+  const _SignUpForm({required this.language, required this.onSubmit});
 
+  final AppLanguage language;
   final Future<void> Function(UserProfile profile, String password) onSubmit;
 
   @override
@@ -454,6 +520,10 @@ class _SignUpFormState extends State<_SignUpForm> {
     }
   }
 
+  String _text(String english, String malay) {
+    return widget.language == AppLanguage.malay ? malay : english;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -462,9 +532,9 @@ class _SignUpFormState extends State<_SignUpForm> {
         children: [
           TextFormField(
             controller: _fullNameController,
-            decoration: const InputDecoration(
-              labelText: 'Full name',
-              prefixIcon: Icon(Icons.person_rounded),
+            decoration: InputDecoration(
+              labelText: _text('Full name', 'Nama penuh'),
+              prefixIcon: const Icon(Icons.person_rounded),
             ),
             validator: _required,
           ),
@@ -472,14 +542,18 @@ class _SignUpFormState extends State<_SignUpForm> {
           TextFormField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(
-              labelText: 'Email',
-              prefixIcon: Icon(Icons.email_rounded),
+            decoration: InputDecoration(
+              labelText: _text('Email', 'Emel'),
+              prefixIcon: const Icon(Icons.email_rounded),
             ),
             validator: (value) {
               final text = value?.trim() ?? '';
-              if (text.isEmpty) return 'Enter your email';
-              if (!text.contains('@')) return 'Enter a valid email';
+              if (text.isEmpty) {
+                return _text('Enter your email', 'Masukkan emel anda');
+              }
+              if (!text.contains('@')) {
+                return _text('Enter a valid email', 'Masukkan emel yang sah');
+              }
               return null;
             },
           ),
@@ -490,10 +564,12 @@ class _SignUpFormState extends State<_SignUpForm> {
             enableSuggestions: false,
             autocorrect: false,
             decoration: InputDecoration(
-              labelText: 'Password',
+              labelText: _text('Password', 'Kata laluan'),
               prefixIcon: const Icon(Icons.lock_rounded),
               suffixIcon: IconButton(
-                tooltip: _showPassword ? 'Hide password' : 'Show password',
+                tooltip: _showPassword
+                    ? _text('Hide password', 'Sembunyikan kata laluan')
+                    : _text('Show password', 'Papar kata laluan'),
                 onPressed: () {
                   setState(() => _showPassword = !_showPassword);
                 },
@@ -505,16 +581,19 @@ class _SignUpFormState extends State<_SignUpForm> {
               ),
             ),
             validator: (value) => value == null || value.length < 6
-                ? 'Password must be at least 6 characters'
+                ? _text(
+                    'Password must be at least 6 characters',
+                    'Kata laluan mesti sekurang-kurangnya 6 aksara',
+                  )
                 : null,
           ),
           const SizedBox(height: 12),
           TextFormField(
             controller: _ageController,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'Age',
-              prefixIcon: Icon(Icons.cake_rounded),
+            decoration: InputDecoration(
+              labelText: _text('Age', 'Umur'),
+              prefixIcon: const Icon(Icons.cake_rounded),
             ),
             validator: _required,
           ),
@@ -523,25 +602,25 @@ class _SignUpFormState extends State<_SignUpForm> {
             borderRadius: BorderRadius.circular(14),
             onTap: _pickBirthday,
             child: InputDecorator(
-              decoration: const InputDecoration(
-                labelText: 'Birthday date',
-                prefixIcon: Icon(Icons.calendar_month_rounded),
+              decoration: InputDecoration(
+                labelText: _text('Birthday date', 'Tarikh lahir'),
+                prefixIcon: const Icon(Icons.calendar_month_rounded),
               ),
               child: Text(
                 _birthday == null
-                    ? 'Choose birthday'
+                    ? _text('Choose birthday', 'Pilih tarikh lahir')
                     : '${_birthday!.day}/${_birthday!.month}/${_birthday!.year}',
               ),
             ),
           ),
           if (_showBirthdayError)
-            const Padding(
-              padding: EdgeInsets.only(left: 12, top: 6),
+            Padding(
+              padding: const EdgeInsets.only(left: 12, top: 6),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Select your birthday date',
-                  style: TextStyle(color: Colors.red, fontSize: 12),
+                  _text('Select your birthday date', 'Pilih tarikh lahir anda'),
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
                 ),
               ),
             ),
@@ -549,9 +628,9 @@ class _SignUpFormState extends State<_SignUpForm> {
           TextFormField(
             controller: _addressController,
             maxLines: 2,
-            decoration: const InputDecoration(
-              labelText: 'Address',
-              prefixIcon: Icon(Icons.home_rounded),
+            decoration: InputDecoration(
+              labelText: _text('Address', 'Alamat'),
+              prefixIcon: const Icon(Icons.home_rounded),
             ),
             validator: _required,
           ),
@@ -559,9 +638,9 @@ class _SignUpFormState extends State<_SignUpForm> {
           TextFormField(
             controller: _phoneController,
             keyboardType: TextInputType.phone,
-            decoration: const InputDecoration(
-              labelText: 'Phone number',
-              prefixIcon: Icon(Icons.phone_rounded),
+            decoration: InputDecoration(
+              labelText: _text('Phone number', 'Nombor telefon'),
+              prefixIcon: const Icon(Icons.phone_rounded),
             ),
             validator: _required,
           ),
@@ -571,7 +650,11 @@ class _SignUpFormState extends State<_SignUpForm> {
             child: FilledButton.icon(
               onPressed: _isLoading ? null : _createAccount,
               icon: const Icon(Icons.person_add_rounded),
-              label: Text(_isLoading ? 'Creating Account...' : 'Sign Up'),
+              label: Text(
+                _isLoading
+                    ? _text('Creating Account...', 'Sedang Mendaftar...')
+                    : _text('Sign Up', 'Daftar'),
+              ),
             ),
           ),
         ],
@@ -581,7 +664,7 @@ class _SignUpFormState extends State<_SignUpForm> {
 
   String? _required(String? value) {
     return value == null || value.trim().isEmpty
-        ? 'This field is required'
+        ? _text('This field is required', 'Medan ini diperlukan')
         : null;
   }
 }
