@@ -102,7 +102,7 @@ class AboutPage extends StatelessWidget {
                 _AboutSection(
                   icon: Icons.co_present_rounded,
                   title: copy.lecturerTitle,
-                  children: const [Text('En. Rozik Rasyidi bin Johan')],
+                  children: const [Text('Encik Rasyidi bin Johan')],
                 ),
                 const SizedBox(height: 12),
                 _AboutSection(
@@ -134,7 +134,10 @@ class AboutPage extends StatelessWidget {
                 Text(
                   copy.footer,
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleMedium,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    height: 1.35,
+                  ),
                 ),
               ],
             ),
@@ -216,9 +219,21 @@ class _TeamMember extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(name, style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            name,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
           const SizedBox(height: 3),
-          Text(id),
+          Text(
+            id,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontSize: 15,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
         ],
       ),
     );
@@ -280,7 +295,7 @@ class _AboutCopy {
     courseName: 'Mobile Application Design and Development',
     technologiesTitle: 'Technologies',
     footer:
-        'Developed for Educational Purpose\nDTS3073 - Reka Bentuk dan Pembangunan Aplikasi Mudah Alih\nFaculty of Computing and Meta Technology (META), UPSI',
+        '(c) Work-Based Learning (WBL) Project 2026\nFaculty of Computing and Meta-Technology (META)\nUniversiti Pendidikan Sultan Idris (UPSI)',
   );
 
   static const malay = _AboutCopy(
@@ -303,6 +318,6 @@ class _AboutCopy {
     courseName: 'Reka Bentuk dan Pembangunan Aplikasi Mudah Alih',
     technologiesTitle: 'Teknologi',
     footer:
-        'Dibangunkan untuk Tujuan Pendidikan\nDTS3073 - Reka Bentuk dan Pembangunan Aplikasi Mudah Alih\nFakulti Komputeran dan Meta Teknologi (META), UPSI',
+        '(c) Projek Work-Based Learning (WBL) 2026\nFakulti Komputeran dan Meta-Teknologi (META)\nUniversiti Pendidikan Sultan Idris (UPSI)',
   );
 }
