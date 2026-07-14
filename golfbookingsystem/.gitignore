@@ -46,5 +46,6 @@ app.*.map.json
 
 .vscode/
 *.apk
+UPSI-Driving-Range-source-submission*.zip
 website_v*_inspect/
 ../golfbookingsystem.zip
