@@ -7,6 +7,17 @@ where profile.email is not null
       and auth_user.id <> profile.id
   );
 
+delete from public.profiles profile
+where profile.email is not null
+  and exists (
+    select 1
+    from auth.users auth_user
+    where lower(profile.email) like lower(
+        split_part(auth_user.email, '@', 1) || '+%@' || split_part(auth_user.email, '@', 2)
+      )
+      and auth_user.id <> profile.id
+  );
+
 insert into public.profiles (
   id,
   full_name,
