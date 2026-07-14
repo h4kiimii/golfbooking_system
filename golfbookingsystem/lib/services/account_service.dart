@@ -77,7 +77,7 @@ class AccountService {
       email: user.email ?? profile.email,
       loginProvider: 'Email Sign Up',
     );
-    await saveProfile(savedProfile);
+    await _saveProfileAfterSignUp(savedProfile);
 
     return AuthSession(profile: savedProfile, password: password);
   }
@@ -103,7 +103,7 @@ class AccountService {
         email: user.email ?? profile.email,
         loginProvider: 'Email Sign Up',
       );
-      await saveProfile(savedProfile);
+      await _saveProfileAfterSignUp(savedProfile);
 
       return AuthSession(profile: savedProfile, password: password);
     } on AuthException {
@@ -118,6 +118,24 @@ class AccountService {
     return message.contains('already registered') ||
         message.contains('already exists') ||
         message.contains('already been registered');
+  }
+
+  Future<void> _saveProfileAfterSignUp(UserProfile profile) async {
+    try {
+      await saveProfile(profile);
+    } on PostgrestException catch (error) {
+      if (!_isDuplicateProfileEmail(error)) {
+        rethrow;
+      }
+    }
+  }
+
+  bool _isDuplicateProfileEmail(PostgrestException error) {
+    final message = error.message.toLowerCase();
+    return error.code == '23505' &&
+        (message.contains('profiles_email_key') ||
+            message.contains('duplicate key') ||
+            message.contains('email'));
   }
 
   Future<void> saveProfile(UserProfile profile) async {
