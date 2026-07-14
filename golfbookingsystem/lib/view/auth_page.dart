@@ -93,6 +93,8 @@ class _AuthPageState extends State<AuthPage> {
     return Scaffold(
       body: AppBackground(
         imageUrl: widget.backgroundUrl,
+        fallbackAsset: AppBackground.defaultLoginAsset,
+        preset: AppBackgroundPreset.login,
         forceDarkOverlay: true,
         child: Theme(
           data: AppTheme.darkTheme,

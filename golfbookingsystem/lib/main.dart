@@ -238,6 +238,8 @@ class _LoginSplashPage extends StatelessWidget {
         backgroundColor: const Color(0xFF0B1210),
         body: AppBackground(
           imageUrl: backgroundUrl,
+          fallbackAsset: AppBackground.defaultLoginAsset,
+          preset: AppBackgroundPreset.login,
           forceDarkOverlay: true,
           child: const Center(
             child: Column(

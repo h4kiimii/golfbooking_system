@@ -274,6 +274,8 @@ class _AppShellState extends State<AppShell> {
       appBar: AppBar(title: const AppBarBrand()),
       body: AppBackground(
         imageUrl: widget.backgroundUrl,
+        fallbackAsset: AppBackground.defaultAppAsset,
+        preset: AppBackgroundPreset.app,
         child: SafeArea(
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 280),
