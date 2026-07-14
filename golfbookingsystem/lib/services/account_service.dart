@@ -44,27 +44,32 @@ class AccountService {
     required UserProfile profile,
     required String password,
   }) async {
-    final response = await _client.auth.signUp(
-      email: profile.email,
-      password: password,
-      data: {
-        'full_name': profile.fullName,
-        'age': profile.age,
-        'birthday': profile.birthday.toIso8601String().split('T').first,
-        'address': profile.address,
-        'phone_number': profile.phoneNumber,
-      },
-    );
-    final user = response.user;
-    if (user == null) {
-      throw const AuthException(
-        'Account created. Please verify your email before logging in.',
+    final AuthResponse response;
+    try {
+      response = await _client.auth.signUp(
+        email: profile.email,
+        password: password,
+        data: {
+          'full_name': profile.fullName,
+          'age': profile.age,
+          'birthday': profile.birthday.toIso8601String().split('T').first,
+          'address': profile.address,
+          'phone_number': profile.phoneNumber,
+        },
       );
+    } on AuthException catch (error) {
+      if (_isAlreadyRegistered(error)) {
+        return _completeSignUpBySigningIn(profile: profile, password: password);
+      }
+      rethrow;
     }
+
+    final user = response.user;
     if (response.session == null) {
-      throw const AuthException(
-        'Account created. Please verify your email, then log in to finish your profile record.',
-      );
+      return _completeSignUpBySigningIn(profile: profile, password: password);
+    }
+    if (user == null) {
+      throw const AuthException('Account created. Please log in to continue.');
     }
 
     final savedProfile = profile.copyWith(
@@ -75,6 +80,44 @@ class AccountService {
     await saveProfile(savedProfile);
 
     return AuthSession(profile: savedProfile, password: password);
+  }
+
+  Future<AuthSession> _completeSignUpBySigningIn({
+    required UserProfile profile,
+    required String password,
+  }) async {
+    try {
+      final response = await _client.auth.signInWithPassword(
+        email: profile.email,
+        password: password,
+      );
+      final user = response.user;
+      if (user == null) {
+        throw const AuthException(
+          'Account created. Please log in to continue.',
+        );
+      }
+
+      final savedProfile = profile.copyWith(
+        id: user.id,
+        email: user.email ?? profile.email,
+        loginProvider: 'Email Sign Up',
+      );
+      await saveProfile(savedProfile);
+
+      return AuthSession(profile: savedProfile, password: password);
+    } on AuthException {
+      throw const AuthException(
+        'Account created. Please verify your email, then log in to continue.',
+      );
+    }
+  }
+
+  bool _isAlreadyRegistered(AuthException error) {
+    final message = error.message.toLowerCase();
+    return message.contains('already registered') ||
+        message.contains('already exists') ||
+        message.contains('already been registered');
   }
 
   Future<void> saveProfile(UserProfile profile) async {
