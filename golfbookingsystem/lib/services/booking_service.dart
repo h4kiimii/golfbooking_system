@@ -25,6 +25,7 @@ class BookingService {
   }
 
   Future<List<Booking>> loadMyBookings() async {
+    await _ensureCurrentUserProfile();
     final rows = await _client
         .from(_bookingsTable)
         .select('*, payments(*)')
@@ -71,6 +72,7 @@ class BookingService {
   }
 
   Future<Booking> createBooking(Booking booking) async {
+    await _ensureCurrentUserProfile();
     final id = _isUuid(booking.id) ? booking.id : _newUuid();
     final bookingToSave = booking.copyWith(id: id);
     final bookingData = await _bookingDataForAdminWebsite(bookingToSave);
@@ -85,6 +87,7 @@ class BookingService {
   }
 
   Future<void> updateStatus(String bookingId, BookingStatus status) async {
+    await _ensureCurrentUserProfile();
     final patch = {
       'status': status.name,
       'booking_status': _bookingStatusForWebsite(status),
@@ -110,6 +113,7 @@ class BookingService {
     required DateTime date,
     required String time,
   }) async {
+    await _ensureCurrentUserProfile();
     await _client
         .from(_bookingsTable)
         .update({
@@ -127,6 +131,7 @@ class BookingService {
   }
 
   Future<void> deleteBooking(String bookingId) async {
+    await _ensureCurrentUserProfile();
     await _client
         .from(_bookingsTable)
         .delete()
@@ -135,9 +140,70 @@ class BookingService {
   }
 
   Future<void> submitFeedback(FeedbackMessage feedback) async {
+    await _ensureCurrentUserProfile();
     await _client
         .from(_feedbackTable)
         .insert(feedback.toSupabase(userId: _userId));
+  }
+
+  Future<void> _ensureCurrentUserProfile() async {
+    final user = _client.auth.currentUser;
+    if (user == null) {
+      throw const AuthException('Please log in before saving data.');
+    }
+
+    final existing = await _client
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .limit(1)
+        .maybeSingle();
+    if (existing != null) return;
+
+    final metadata = user.userMetadata ?? const <String, dynamic>{};
+    final email = user.email ?? '${user.id}@upsi-driving-range.local';
+    final payload = {
+      'id': user.id,
+      'full_name': _metadataText(metadata, 'full_name') ?? 'Golf Member',
+      'email': email,
+      'age': int.tryParse(_metadataText(metadata, 'age') ?? '') ?? 21,
+      'birthday': _metadataText(metadata, 'birthday') ?? '2005-01-01',
+      'address': _metadataText(metadata, 'address') ?? 'Kuala Lumpur, Malaysia',
+      'phone': _metadataText(metadata, 'phone_number') ?? '+60 12-345 6789',
+      'phone_number':
+          _metadataText(metadata, 'phone_number') ?? '+60 12-345 6789',
+      'login_provider': 'User Email',
+    };
+
+    try {
+      await _client.from('profiles').insert(payload);
+    } on PostgrestException catch (error) {
+      if (!_isDuplicateProfileEmail(error)) rethrow;
+      await _client.from('profiles').insert({
+        ...payload,
+        'email': _uniqueFallbackEmail(user.id, email),
+      });
+    }
+  }
+
+  String? _metadataText(Map<String, dynamic> metadata, String key) {
+    final value = metadata[key]?.toString().trim();
+    return value == null || value.isEmpty ? null : value;
+  }
+
+  bool _isDuplicateProfileEmail(PostgrestException error) {
+    final message = error.message.toLowerCase();
+    return error.code == '23505' &&
+        (message.contains('profiles_email_key') ||
+            message.contains('duplicate key') ||
+            message.contains('email'));
+  }
+
+  String _uniqueFallbackEmail(String userId, String email) {
+    final atIndex = email.indexOf('@');
+    final suffix = userId.replaceAll('-', '').substring(0, 12);
+    if (atIndex <= 0) return '$suffix@upsi-driving-range.local';
+    return '${email.substring(0, atIndex)}+$suffix${email.substring(atIndex)}';
   }
 
   Future<void> _savePaymentIfNeeded(Booking booking) async {
